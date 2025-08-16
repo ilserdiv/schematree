@@ -7,49 +7,58 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
+    <header role="banner">
         <div class="logo-container">
-            <div class="logo"></div>
+            <img src="logo.png" alt="SchemaTree Logo" class="logo">
             <span class="title">SchemaTree</span>
         </div>
-        <nav>
+        <nav role="navigation">
             <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Content</a></li>
-                <li><a href="#">Profile</a></li>
+                <li><button aria-label="Go to Home">Home</button></li>
+                <li><button aria-label="Go to Content">Content</button></li>
+                <li><button aria-label="Go to Profile">Profile</button></li>
             </ul>
         </nav>
+        <button class="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
     </header>
-
-    <main>
+    <main role="main">
         <div class="controls">
-            <button class="create-btn">Create</button>
-            <button class="open-btn">Open</button>
+            <button class="create-btn" aria-label="Create new content">Create</button>
+            <button class="open-btn" aria-label="Open existing content">Open</button>
         </div>
         <div class="content-container">
-            <!-- Tree Section -->
-            <section class="tree-section">
-                <h2>Tree</h2>
+            <section class="tree-section" role="region" aria-label="Mindmap">
+                <div class="title-container">
+                    <h2 class="section-title" aria-label="Tree title">Tree</h2>
+                    <button class="edit-title-btn" aria-label="Edit Tree title">✏️</button>
+                </div>
                 <div class="tree-placeholder">
-                    Empty Tree Area (Mindmap will go here later, e.g., using D3.js or Canvas)
+                    <p>Click "Create" to start building your mindmap.</p>
                 </div>
             </section>
-
-            <!-- Notes Section -->
-            <section class="notes-section">
-                <h2>Notes</h2>
+            <section class="notes-section" role="region" aria-label="Notes">
+                <div class="title-container">
+                    <h2 class="section-title" aria-label="Notes title">Notes</h2>
+                    <button class="edit-title-btn" aria-label="Edit Notes title">✏️</button>
+                </div>
                 <div class="notes-placeholder">
-                    Empty Notes Area (Details, images, videos, quizzes will appear here)
+                    <p>Add notes, images, or quizzes here.</p>
                 </div>
             </section>
         </div>
     </main>
-
-    <div class="discussion-section">
-        <h2>Discussion</h2>
+    <div class="discussion-section" role="region" aria-label="Discussion">
+        <div class="title-container">
+            <h2 class="section-title discussion-title" aria-label="Discussion title">Discussion</h2>
+        </div>
         <div class="discussion-placeholder">
-            Comment Section (Visitors can discuss here; back-end needed for functionality)
+            <div class="comment-input">
+                <input type="text" class="comment-field" placeholder="Add a comment..." aria-label="Enter a comment">
+                <button class="comment-btn" aria-label="Submit comment">Post</button>
+            </div>
+            <div class="comments-list"></div>
         </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>
