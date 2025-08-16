@@ -4,7 +4,8 @@ const SchemaTree = {
         treeTitle: 'Tree',
         notesTitle: 'Notes',
         discussionTitle: 'Discussion',
-        comments: []
+        comments: [],
+        nodes: []
     },
     buttonStates: {
         initial: {
@@ -23,7 +24,6 @@ const SchemaTree = {
             document.body.classList.add('creation-mode');
             this.updateButtons('creation');
             this.addToolTabs();
-            // Enable editing for Tree and Notes titles
             const treeTitle = document.querySelector('.tree-section .section-title');
             const notesTitle = document.querySelector('.notes-section .section-title');
             if (treeTitle) treeTitle.contentEditable = true;
@@ -37,7 +37,6 @@ const SchemaTree = {
             document.body.classList.remove('creation-mode');
             this.updateButtons('initial');
             this.removeToolTabs();
-            // Disable editing and save titles
             const treeTitle = document.querySelector('.tree-section .section-title');
             const notesTitle = document.querySelector('.notes-section .section-title');
             if (treeTitle) {
@@ -93,7 +92,6 @@ const SchemaTree = {
         treeSection.insertBefore(this.createTreeTools(), treeTitleContainer.nextSibling);
         notesSection.insertBefore(this.createNotesTools(), notesTitleContainer.nextSibling);
 
-        // Event delegation for tool buttons
         treeSection.addEventListener('click', this.handleToolClick);
         notesSection.addEventListener('click', this.handleToolClick);
     },
@@ -119,6 +117,8 @@ const SchemaTree = {
             <button class="tool-btn" data-tooltip="Add text">📝</button>
             <button class="tool-btn" data-tooltip="Attach files">📎</button>
             <button class="tool-btn" data-tooltip="Add forms">📋</button>
+            <button class="tool-btn" data-tooltip="Undo last change">⟲</button>
+            <button class="tool-btn" data-tooltip="Redo last change">⟳</button>
         `;
         return notesTools;
     },
@@ -138,7 +138,8 @@ const SchemaTree = {
 
     handleToolClick(e) {
         if (e.target.classList.contains('tool-btn')) {
-            alert(`Clicked ${e.target.textContent} tool - Functionality to be added later!`);
+            const action = e.target.getAttribute('data-tooltip');
+            alert(`Clicked ${action} - Functionality to be added later!`);
         }
     },
 
@@ -162,7 +163,6 @@ const SchemaTree = {
             titleElement.textContent = titleElement.dataset.defaultTitle || 'Untitled';
         }
         titleElement.setAttribute('aria-label', `${titleElement.textContent} title`);
-        // Update projectData
         const section = titleElement.closest('section');
         if (section.classList.contains('tree-section')) {
             this.projectData.treeTitle = titleElement.textContent;
@@ -172,23 +172,30 @@ const SchemaTree = {
     },
 
     saveProject() {
-        // Update titles in projectData
-        const treeTitle = document.querySelector('.tree-section .section-title').textContent;
-        const notesTitle = document.querySelector('.notes-section .section-title').textContent;
-        const discussionTitle = document.querySelector('.discussion-section .section-title').textContent;
-        this.projectData.treeTitle = treeTitle;
-        this.projectData.notesTitle = notesTitle;
-        this.projectData.discussionTitle = discussionTitle;
+        try {
+            const treeTitle = document.querySelector('.tree-section .section-title').textContent;
+            const notesTitle = document.querySelector('.notes-section .section-title').textContent;
+            const discussionTitle = document.querySelector('.discussion-section .section-title').textContent;
+            this.projectData.treeTitle = treeTitle;
+            this.projectData.notesTitle = notesTitle;
+            this.projectData.discussionTitle = discussionTitle;
 
-        // Save to localStorage
-        localStorage.setItem('schemaTreeProject', JSON.stringify(this.projectData));
-        this.exitCreationMode();
-        alert('Project saved successfully!');
+            localStorage.setItem('schemaTreeProject', JSON.stringify(this.projectData));
+            this.exitCreationMode();
+            alert('Project saved successfully!');
+        } catch (error) {
+            console.error('Error saving project:', error);
+            alert('Failed to save project.');
+        }
     },
 
     loadProject() {
-        const savedData = localStorage.getItem('schemaTreeProject');
-        if (savedData) {
+        try {
+            const savedData = localStorage.getItem('schemaTreeProject');
+            if (!savedData) {
+                alert('No saved project found.');
+                return;
+            }
             this.projectData = JSON.parse(savedData);
             const treeTitle = document.querySelector('.tree-section .section-title');
             const notesTitle = document.querySelector('.notes-section .section-title');
@@ -207,35 +214,57 @@ const SchemaTree = {
             }
             this.renderComments();
             alert('Project loaded successfully!');
-        } else {
-            alert('No saved project found.');
+        } catch (error) {
+            console.error('Error loading project:', error);
+            alert('Failed to load project due to corrupted data.');
         }
     },
 
     addComment() {
         const commentField = document.querySelector('.comment-field');
         const commentText = commentField.value.trim();
-        if (commentText) {
-            const comment = {
-                text: commentText,
-                timestamp: new Date().toISOString()
-            };
-            this.projectData.comments.push(comment);
-            commentField.value = '';
-            this.renderComments();
+        if (!commentText) {
+            alert('Comment cannot be empty.');
+            return;
         }
+        if (commentText.length > 500) {
+            alert('Comment exceeds 500 character limit.');
+            return;
+        }
+        const comment = {
+            text: commentText,
+            timestamp: new Date().toISOString()
+        };
+        this.projectData.comments.push(comment);
+        commentField.value = '';
+        this.renderComments();
+    },
+
+    deleteComment(index) {
+        this.projectData.comments.splice(index, 1);
+        this.renderComments();
     },
 
     renderComments() {
         const commentsList = document.querySelector('.comments-list');
-        if (!commentsList) return;
+        const noComments = document.querySelector('.no-comments');
+        if (!commentsList || !noComments) return;
+
         commentsList.innerHTML = '';
-        this.projectData.comments.forEach(comment => {
-            const commentElement = document.createElement('div');
-            commentElement.className = 'comment';
-            commentElement.textContent = `${comment.text} (${new Date(comment.timestamp).toLocaleString()})`;
-            commentsList.appendChild(commentElement);
-        });
+        if (this.projectData.comments.length === 0) {
+            noComments.style.display = 'block';
+        } else {
+            noComments.style.display = 'none';
+            this.projectData.comments.forEach((comment, index) => {
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment';
+                commentElement.innerHTML = `
+                    ${comment.text} (${new Date(comment.timestamp).toLocaleString()})
+                    <button class="delete-comment-btn" data-index="${index}" aria-label="Delete comment">🗑️</button>
+                `;
+                commentsList.appendChild(commentElement);
+            });
+        }
     },
 
     init() {
@@ -249,22 +278,39 @@ const SchemaTree = {
         createBtn.addEventListener('click', this.buttonStates.initial.create.handler.bind(this));
         openBtn.addEventListener('click', this.buttonStates.initial.open.handler.bind(this));
 
-        // Theme toggle
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.dataset.theme = savedTheme;
         const themeToggle = document.querySelector('.theme-toggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
-                document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+                const newTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+                document.documentElement.dataset.theme = newTheme;
+                localStorage.setItem('theme', newTheme);
             });
         }
 
-        // Keyboard accessibility for tools
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navUl = document.querySelector('nav ul');
+        if (menuToggle && navUl) {
+            navUl.classList.remove('active');
+            menuToggle.addEventListener('click', () => {
+                navUl.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (navUl.classList.contains('active') && !navUl.contains(e.target) && e.target !== menuToggle) {
+                    navUl.classList.remove('active');
+                }
+            });
+        }
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && e.target.classList.contains('tool-btn')) {
                 e.target.click();
             }
         });
 
-        // Title editing for Tree and Notes only
         document.querySelectorAll('.tree-section .edit-title-btn, .notes-section .edit-title-btn').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const titleElement = btn.previousElementSibling;
@@ -276,17 +322,20 @@ const SchemaTree = {
 
         document.querySelectorAll('.tree-section .section-title, .notes-section .section-title').forEach((title) => {
             title.dataset.defaultTitle = title.textContent;
-            title.contentEditable = false; // Initially non-editable
+            title.contentEditable = false;
             title.addEventListener('blur', () => this.saveTitleEdit(title));
             title.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     this.saveTitleEdit(title);
+                } else if (e.key === 'Escape') {
+                    title.textContent = title.dataset.defaultTitle || 'Untitled';
+                    title.contentEditable = false;
+                    title.classList.remove('editing');
                 }
             });
         });
 
-        // Comment submission
         const commentBtn = document.querySelector('.comment-btn');
         const commentField = document.querySelector('.comment-field');
         if (commentBtn && commentField) {
@@ -298,6 +347,18 @@ const SchemaTree = {
                 }
             });
         }
+
+        const commentsList = document.querySelector('.comments-list');
+        if (commentsList) {
+            commentsList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-comment-btn')) {
+                    const index = parseInt(e.target.dataset.index, 10);
+                    this.deleteComment(index);
+                }
+            });
+        }
+
+        this.renderComments();
     }
 };
 

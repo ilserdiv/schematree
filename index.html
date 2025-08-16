@@ -9,17 +9,20 @@
 <body>
     <header role="banner">
         <div class="logo-container">
-            <img src="logo.png" alt="SchemaTree Logo" class="logo">
+            <img src="logo.png" alt="SchemaTree Logo" class="logo" onerror="this.src='https://via.placeholder.com/35'">
             <span class="title">SchemaTree</span>
         </div>
-        <nav role="navigation">
-            <ul>
-                <li><button aria-label="Go to Home">Home</button></li>
-                <li><button aria-label="Go to Content">Content</button></li>
-                <li><button aria-label="Go to Profile">Profile</button></li>
-            </ul>
-        </nav>
-        <button class="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+        <div class="nav-container">
+            <button class="menu-toggle" aria-label="Toggle navigation menu">☰</button>
+            <nav role="navigation">
+                <ul>
+                    <li><a href="#" aria-label="Go to Home" class="nav-link">Home</a></li>
+                    <li><a href="#" aria-label="Go to Content" class="nav-link">Content</a></li>
+                    <li><a href="#" aria-label="Go to Profile" class="nav-link">Profile</a></li>
+                </ul>
+            </nav>
+            <button class="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+        </div>
     </header>
     <main role="main">
         <div class="controls">
@@ -34,6 +37,7 @@
                 </div>
                 <div class="tree-placeholder">
                     <p>Click "Create" to start building your mindmap.</p>
+                    <div class="tree-nodes"></div>
                 </div>
             </section>
             <section class="notes-section" role="region" aria-label="Notes">
@@ -53,10 +57,12 @@
         </div>
         <div class="discussion-placeholder">
             <div class="comment-input">
-                <input type="text" class="comment-field" placeholder="Add a comment..." aria-label="Enter a comment">
+                <label for="comment-input" class="visually-hidden">Enter a comment</label>
+                <input type="text" id="comment-input" class="comment-field" placeholder="Add a comment..." aria-label="Enter a comment" required maxlength="500">
                 <button class="comment-btn" aria-label="Submit comment">Post</button>
             </div>
             <div class="comments-list"></div>
+            <p class="no-comments" aria-live="polite">- No Comments Yet -</p>
         </div>
     </div>
     <script src="script.js"></script>
