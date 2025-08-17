@@ -38,21 +38,44 @@ const SchemaTree = {
 
     exitCreationMode() {
         if (this.creationMode) {
-            this.creationMode = false;
-            document.body.classList.remove('creation-mode');
-            this.updateButtons(this.projectLoaded ? 'loaded' : 'initial');
-            this.removeToolTabs();
-            const treeTitle = document.querySelector('.tree-section .section-title');
-            const notesTitle = document.querySelector('.notes-section .section-title');
-            if (treeTitle) {
-                treeTitle.contentEditable = false;
-                treeTitle.classList.remove('editing');
-                this.saveTitleEdit(treeTitle);
-            }
-            if (notesTitle) {
-                notesTitle.contentEditable = false;
-                notesTitle.classList.remove('editing');
-                this.saveTitleEdit(notesTitle);
+            const savedData = localStorage.getItem('schemaTreeProject');
+            const currentData = JSON.stringify(this.projectData);
+            if (savedData && currentData !== savedData) {
+                if (confirm('Are you sure you want to exit? Unsaved changes will be discarded.')) {
+                    this.creationMode = false;
+                    document.body.classList.remove('creation-mode');
+                    this.updateButtons(this.projectLoaded ? 'loaded' : 'initial');
+                    this.removeToolTabs();
+                    const treeTitle = document.querySelector('.tree-section .section-title');
+                    const notesTitle = document.querySelector('.notes-section .section-title');
+                    if (treeTitle) {
+                        treeTitle.contentEditable = false;
+                        treeTitle.classList.remove('editing');
+                        this.saveTitleEdit(treeTitle);
+                    }
+                    if (notesTitle) {
+                        notesTitle.contentEditable = false;
+                        notesTitle.classList.remove('editing');
+                        this.saveTitleEdit(notesTitle);
+                    }
+                }
+            } else {
+                this.creationMode = false;
+                document.body.classList.remove('creation-mode');
+                this.updateButtons(this.projectLoaded ? 'loaded' : 'initial');
+                this.removeToolTabs();
+                const treeTitle = document.querySelector('.tree-section .section-title');
+                const notesTitle = document.querySelector('.notes-section .section-title');
+                if (treeTitle) {
+                    treeTitle.contentEditable = false;
+                    treeTitle.classList.remove('editing');
+                    this.saveTitleEdit(treeTitle);
+                }
+                if (notesTitle) {
+                    notesTitle.contentEditable = false;
+                    notesTitle.classList.remove('editing');
+                    this.saveTitleEdit(notesTitle);
+                }
             }
         }
     },
@@ -200,20 +223,27 @@ const SchemaTree = {
     },
 
     saveProject() {
-        try {
-            const treeTitle = document.querySelector('.tree-section .section-title').textContent;
-            const notesTitle = document.querySelector('.notes-section .section-title').textContent;
-            const discussionTitle = document.querySelector('.discussion-section .section-title').textContent;
-            this.projectData.treeTitle = treeTitle;
-            this.projectData.notesTitle = notesTitle;
-            this.projectData.discussionTitle = discussionTitle;
+        const savedData = localStorage.getItem('schemaTreeProject');
+        const currentData = JSON.stringify(this.projectData);
+        if (savedData && currentData === savedData) {
+            alert('No changes detected. Nothing to save.');
+            return;
+        }
+        if (confirm('Are you sure you want to save? This will override the previous version.')) {
+            try {
+                const treeTitle = document.querySelector('.tree-section .section-title').textContent;
+                const notesTitle = document.querySelector('.notes-section .section-title').textContent;
+                const discussionTitle = document.querySelector('.discussion-section .section-title').textContent;
+                this.projectData.treeTitle = treeTitle;
+                this.projectData.notesTitle = notesTitle;
+                this.projectData.discussionTitle = discussionTitle;
 
-            localStorage.setItem('schemaTreeProject', JSON.stringify(this.projectData));
-            this.exitCreationMode();
-            alert('Project saved successfully!');
-        } catch (error) {
-            console.error('Error saving project:', error);
-            alert('Failed to save project.');
+                localStorage.setItem('schemaTreeProject', JSON.stringify(this.projectData));
+                alert('Project saved successfully!');
+            } catch (error) {
+                console.error('Error saving project:', error);
+                alert('Failed to save project.');
+            }
         }
     },
 

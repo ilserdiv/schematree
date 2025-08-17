@@ -311,13 +311,17 @@ main {
 
 .tree-placeholder, .notes-placeholder {
     height: 400px;
-    border: 1px dashed var(--accent-green);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--content-text);
     background-color: var(--section-bg);
     position: relative;
+}
+
+body.creation-mode .tree-placeholder,
+body.creation-mode .notes-placeholder {
+    border: 1px dashed var(--accent-green);
 }
 
 .tree-nodes {
