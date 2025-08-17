@@ -1,5 +1,6 @@
 const SchemaTree = {
     creationMode: false,
+    projectLoaded: false,
     projectData: {
         treeTitle: 'Tree',
         notesTitle: 'Notes',
@@ -12,8 +13,12 @@ const SchemaTree = {
             create: { text: 'Create', class: 'create-btn', handler: () => SchemaTree.enterCreationMode() },
             open: { text: 'Open', class: 'open-btn', handler: () => SchemaTree.loadProject() }
         },
+        loaded: {
+            edit: { text: 'Edit', class: 'create-btn', handler: () => SchemaTree.enterCreationMode() },
+            close: { text: 'Close', class: 'exit-btn', handler: () => SchemaTree.closeProject() }
+        },
         creation: {
-            create: { text: 'Save', class: 'save-btn', handler: () => SchemaTree.saveProject() },
+            save: { text: 'Save', class: 'save-btn', handler: () => SchemaTree.saveProject() },
             exit: { text: 'Exit', class: 'exit-btn', handler: () => SchemaTree.exitCreationMode() }
         }
     },
@@ -35,7 +40,7 @@ const SchemaTree = {
         if (this.creationMode) {
             this.creationMode = false;
             document.body.classList.remove('creation-mode');
-            this.updateButtons('initial');
+            this.updateButtons(this.projectLoaded ? 'loaded' : 'initial');
             this.removeToolTabs();
             const treeTitle = document.querySelector('.tree-section .section-title');
             const notesTitle = document.querySelector('.notes-section .section-title');
@@ -49,6 +54,28 @@ const SchemaTree = {
                 notesTitle.classList.remove('editing');
                 this.saveTitleEdit(notesTitle);
             }
+        }
+    },
+
+    closeProject() {
+        if (this.projectLoaded) {
+            this.projectLoaded = false;
+            this.projectData = {
+                treeTitle: 'Tree',
+                notesTitle: 'Notes',
+                discussionTitle: 'Discussion',
+                comments: [],
+                nodes: []
+            };
+            const treeTitle = document.querySelector('.tree-section .section-title');
+            const notesTitle = document.querySelector('.notes-section .section-title');
+            const discussionTitle = document.querySelector('.discussion-section .section-title');
+            if (treeTitle) treeTitle.textContent = this.projectData.treeTitle;
+            if (notesTitle) notesTitle.textContent = this.projectData.notesTitle;
+            if (discussionTitle) discussionTitle.textContent = this.projectData.discussionTitle;
+            this.renderComments();
+            this.updateButtons('initial');
+            alert('Project closed successfully!');
         }
     },
 
@@ -66,18 +93,18 @@ const SchemaTree = {
 
         // Update button properties based on mode
         const state = this.buttonStates[mode];
-        newCreateBtn.textContent = state.create.text;
-        newCreateBtn.className = state.create.class;
-        newOpenBtn.textContent = mode === 'creation' ? state.exit.text : state.open.text;
-        newOpenBtn.className = mode === 'creation' ? state.exit.class : state.open.class;
+        newCreateBtn.textContent = Object.values(state)[0].text;
+        newCreateBtn.className = Object.values(state)[0].class;
+        newOpenBtn.textContent = Object.values(state)[1].text;
+        newOpenBtn.className = Object.values(state)[1].class;
 
         // Replace old buttons
         createBtn.replaceWith(newCreateBtn);
         openBtn.replaceWith(newOpenBtn);
 
         // Add new event listeners
-        newCreateBtn.addEventListener('click', state.create.handler.bind(this));
-        newOpenBtn.addEventListener('click', mode === 'creation' ? state.exit.handler.bind(this) : state.open.handler.bind(this));
+        newCreateBtn.addEventListener('click', Object.values(state)[0].handler.bind(this));
+        newOpenBtn.addEventListener('click', Object.values(state)[1].handler.bind(this));
     },
 
     addToolTabs() {
@@ -117,6 +144,7 @@ const SchemaTree = {
             <button class="tool-btn" data-tooltip="Add text">📝</button>
             <button class="tool-btn" data-tooltip="Attach files">📎</button>
             <button class="tool-btn" data-tooltip="Add forms">📋</button>
+            <div style="flex-grow: 1;"></div>
             <button class="tool-btn" data-tooltip="Undo last change">⟲</button>
             <button class="tool-btn" data-tooltip="Redo last change">⟳</button>
         `;
@@ -197,6 +225,7 @@ const SchemaTree = {
                 return;
             }
             this.projectData = JSON.parse(savedData);
+            this.projectLoaded = true;
             const treeTitle = document.querySelector('.tree-section .section-title');
             const notesTitle = document.querySelector('.notes-section .section-title');
             const discussionTitle = document.querySelector('.discussion-section .section-title');
@@ -213,6 +242,7 @@ const SchemaTree = {
                 discussionTitle.setAttribute('aria-label', `${this.projectData.discussionTitle} title`);
             }
             this.renderComments();
+            this.updateButtons('loaded');
             alert('Project loaded successfully!');
         } catch (error) {
             console.error('Error loading project:', error);

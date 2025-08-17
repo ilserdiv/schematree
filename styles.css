@@ -412,7 +412,7 @@ main {
 
 .tools {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 15px;
     padding: 12px 15px;
@@ -433,26 +433,12 @@ main {
     border-top-color: var(--secondary-bg);
 }
 
-.tree-section .tools {
-    justify-content: flex-start;
-}
-
 .tree-section .tools .tool-btn:nth-last-child(-n+2) {
     margin-left: auto;
 }
 
-.notes-section .tools {
-    justify-content: flex-start;
-    gap: 0;
-}
-
-.notes-section .tools .tool-btn {
-    margin: 0;
-    border-right: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.notes-section .tools .tool-btn:last-child {
-    border-right: none;
+.notes-section .tools .tool-btn:nth-last-child(-n+2) {
+    margin-left: auto;
 }
 
 .tool-btn {
