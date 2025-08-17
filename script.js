@@ -268,11 +268,13 @@ const SchemaTree = {
         this.projectData.comments.push(comment);
         commentField.value = '';
         this.renderComments();
+        localStorage.setItem('schemaTreeProject', JSON.stringify(this.projectData)); // Save immediately
     },
 
     deleteComment(index) {
         this.projectData.comments.splice(index, 1);
         this.renderComments();
+        localStorage.setItem('schemaTreeProject', JSON.stringify(this.projectData)); // Save after deletion
     },
 
     renderComments() {
